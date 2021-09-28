@@ -12,7 +12,7 @@
 
 <p align="center"> 🤖 Telegram bot that recognizes text in images and PDF files
     <br>
-  <b>Use it live here: https://t.me/text_from_image_bot</b>
+  
 </p>
 
 ## 📝 Table of Contents
