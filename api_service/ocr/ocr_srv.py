@@ -51,12 +51,12 @@ def ocr_space_file(filename, language='eng', isTable=False, ocrengine=1):
     try:
         with open(filename, 'rb') as f:
             r = requests.post(url_api, files={filename: f}, data=payload)
-            logger.info('response.status_code: {!s}'.format(r.status_code))
+            logger.info(f'response.status_code: {r.status_code}')
             r.raise_for_status()
     except requests.exceptions.HTTPError as res_HTTPError:
-        logger.warning('res_HTTPError: ' + str(res_HTTPError))
+        logger.warning(f'res_HTTPError: {str(res_HTTPError)}')
     except requests.exceptions.ConnectionError as res_ConnectionError:
-        logger.warning('res_ConnectionError: ' + str(res_ConnectionError))
+        logger.warning(f'res_ConnectionError: {str(res_ConnectionError)}')
     finally:
         logger.info('try return response ocr api')
         res = r.content.decode()
@@ -101,14 +101,13 @@ def ocr_response_data(response_json):
     check value response of ocr service
     """
 
-    logger.info('input response ocr: ' + str(response_json))
+    logger.info(f'input response ocr: {str(response_json)}')
 
     response_data = json.loads(response_json)
     # logger.info('proccesing response_data[OCRExitCode]: ' + str(response_data))
-    logger.info('proccesing response_data: {!s}'.format(response_data))
+    logger.info(f'proccesing response_data: {response_data}')
     # logger.info('proccesing response_data[OCRExitCode]: ' + str(response_data['OCRExitCode']))
-    logger.info('proccesing response_data[OCRExitCode]: {!s}'.format(
-        response_data['OCRExitCode']))
+    logger.info(f"proccesing response_data[OCRExitCode]: {response_data['OCRExitCode']}")
 
     if response_data['OCRExitCode'] == 1:
 
@@ -142,8 +141,7 @@ def ocr_response_data(response_json):
             'parsed_text': '',
         }
 
-    logger.info('proccesing data response ocr - ocr_code: ' +
-                str(data_ocr['ocr_code']))
+    logger.info(f"proccesing data response ocr - ocr_code: {str(data_ocr['ocr_code'])}")
     return data_ocr
 
 

@@ -18,7 +18,7 @@ debug = True
 
 # init default menu message
 srv_settings = get_default_settings()
-logger.info('default srv_settings: ' + str(srv_settings))
+logger.info(f'default srv_settings: {str(srv_settings)}')
 # init default menu language buttons
 list_lang_btn_inline = language_buttons_inline()
 
@@ -56,13 +56,26 @@ async def rec_file(event):
     # ]
 
     if debug: logger.info('event.NewMessage')
-    print(f"NewMessage event: {event}")
+    # print(f"NewMessage event: {event}")
+    if debug: logger.info(f"event.NewMessage event: {event}")
 
     event_msg = event.message
 
-    if event_msg.document:
-        if debug: logger.info(
-            'document.mime_type: ' + event_msg.document.mime_type)
+    # if event_msg.photo:
+    #     if debug: logger.info(f'event_msg.photo: {event_msg.photo}')
+    #     if event_msg.file:
+    #         user_file = event_msg.file
+    #         if debug: logger.info(f'event_msg.file: {event_msg.file}')
+    #         if debug: logger.info(f'file.mime_type: {user_file.mime_type}')
+    #         if debug: logger.info(f'file.name: {user_file.name}')
+    #         if debug: logger.info(f'file.size: {str(user_file.size)}')
+    #         # size in bytes of this file.
+
+    if event_msg.document or event_msg.photo:
+        if event_msg.document and debug:
+            logger.info(f'document.mime_type: {event_msg.document.mime_type}')
+        if event_msg.photo and debug:
+            logger.info(f'event_msg.photo: {event_msg.photo}')
 
         if not is_file_valid(event_msg):
             await event.reply(
@@ -79,16 +92,17 @@ async def rec_file(event):
 
             if event_msg.file:
                 user_file = event_msg.file
-                # if debug: logger.info('file.mime_type: ' + user_file.mime_type)
-                # if debug: logger.info('file.name: ' + user_file.name)
-                # if debug: logger.info(
-                # 'file.size: ' + str(user_file.size)) #size in bytes of this file.
+                if debug: logger.info(f'file.mime_type: {user_file.mime_type}')
+                if debug: logger.info(f'file.name: {user_file.name}')
+                if debug: logger.info(f'file.size: {str(user_file.size)}')
 
                 check_dir('tmp')
 
+                file_name = user_file.name if user_file.name else \
+                    'user_file_name'
                 user_file = await event_msg.download_media(
-                    file='tmp/' + user_file.name)
-                if debug: logger.info('File saved to: ' + str(user_file))
+                    file='tmp/' + file_name)
+                if debug: logger.info(f'File saved to: {str(user_file)}')
 
                 # processing the file by service ocr api
                 resp_ocr = ocr_space_file(
@@ -101,19 +115,18 @@ async def rec_file(event):
                         f"Oops! Something went wrong, try again")
 
                 data_ocr = ocr_response_data(resp_ocr)
-                if debug: logger.info('result ocr - ocr_code: ' + str(data_ocr['ocr_code']))
+                if debug: logger.info(f"result ocr - ocr_code: {str(data_ocr['ocr_code'])}")
                 # if debug: logger.info('result ocr - parsed_text: \n' + str(data_ocr['parsed_text']))
 
                 # remove user's file
                 try:
                     os.remove(user_file)
-                    if debug: logger.info('File remove ' + str(user_file))
+                    if debug: logger.info(f'File remove {str(user_file)}')
                 except Exception as os_remove_exception:
                     logger.warning(os_remove_exception)
 
                 if data_ocr['ocr_exit_code'] != 1:
-                    if debug: logger.info('error result ocr code: {!s}'.format(
-                        data_ocr['ocr_code']))
+                    if debug: logger.info(f"error result ocr code: {data_ocr['ocr_code']}")
                     await event.reply(
                         f"Oops! Something went wrong:"
                         f"{data_ocr['ocr_code']}")
@@ -136,17 +149,19 @@ async def rec_file(event):
                         os.remove('tmp/ocr_text.txt')
                     elif srv_settings['result']['code'] == 'message':
                         if debug: logger.info('reply by message with parsed text')
-                        await event.reply('Parsed text:\n' + pars_text)
+                        await event.reply(
+                            f'Parsed text:'
+                            f'{pars_text}')
 
 
 @bot.on(events.CallbackQuery)
 async def handle_callback_query(event: events.CallbackQuery.Event):
 
-    logger.info('event.stringify: ' + str(event))
+    logger.info(f'event.stringify: {str(event)}')
     # msg_id = event.original_update.msg_id
     # user_id = event.original_update.user_id
     cb_data = event.original_update.data
-    logger.info('event cb_data: ' + str(cb_data))
+    logger.info(f'event cb_data: {str(cb_data)}')
 
     if 'check_limits' in str(cb_data):
         # logger.info('query cb cb_data: ' + str(cb_data))
@@ -166,12 +181,12 @@ async def handle_callback_query(event: events.CallbackQuery.Event):
     elif 'langcode_' in str(cb_data):
 
         lang_code = str(cb_data)[-4:-1]
-        logger.info('query cb lang_code: ' + lang_code)
+        logger.info(f'query cb lang_code: {lang_code}')
 
         srv_settings['lang']['code'] = lang_code
         srv_settings['lang']['desc'] = set_lang[lang_code]
 
-        logger.info('query cb settings: ' + str(srv_settings))
+        logger.info(f'query cb settings: {str(srv_settings)}')
         update_msg = settings_msg(srv_settings,  lang=True)
         # logger.info('query cb update_msg: ' + update_msg)
         await event.edit(update_msg, buttons=list_lang_btn_inline)
@@ -219,7 +234,7 @@ async def handle_callback_query(event: events.CallbackQuery.Event):
             update_msg,
             buttons=settings_buttons_inline(result='file')
         )
-    logger.info('query cb settings after: ' + str(srv_settings))
+    logger.info(f'query cb settings after: {str(srv_settings)}')
 
 
 @bot.on(events.Raw)

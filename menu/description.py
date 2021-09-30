@@ -57,23 +57,23 @@ def settings_msg(data_set=None, default=True, lang=False, limits=False):
 
     # if default:
     if not lang and not update_flag and not limits:
-        msg = def_str + settings_str
-        logger.info('settings_msg by not update_flag: {}'.format(msg))
+        msg = f'{def_str} {settings_str}'
+        logger.info(f'settings_msg by not update_flag: {msg}')
 
     if lang and not update_flag and not limits:
-        msg = lang_str + settings_str
-        logger.info('settings_msg by lang and not update_flag: {}'.format(msg))
+        msg = f'{lang_str} {settings_str}'
+        logger.info(f'settings_msg by lang and not update_flag: {msg}')
 
     if lang and update_flag and not limits:
-        msg = update_lang_str + settings_str
-        logger.info('settings_msg by lang: {}'.format(msg))
+        msg = f'{update_lang_str} {settings_str}'
+        logger.info(f'settings_msg by lang: {msg}')
 
     if not lang and update_flag and not limits:
-        msg = update_str + settings_str
-        logger.info('settings_msg by ELSE: {}'.format(msg))
+        msg = f'{update_str} {settings_str}'
+        logger.info(f'settings_msg by ELSE: {msg}')
     if limits:
         msg = limits_str
-        logger.info('settings_msg by limits: {}'.format(msg))
+        logger.info(f'settings_msg by limits: {msg}')
 
     return msg
 
