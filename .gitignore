@@ -136,3 +136,6 @@ dmypy.json
 #VS CODE
 .vscode
 *.code-workspace
+
+# other
+tmp

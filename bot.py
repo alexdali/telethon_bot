@@ -113,45 +113,48 @@ async def rec_file(event):
                 if not resp_ocr:
                     await event.reply(
                         f"Oops! Something went wrong, try again")
-
-                data_ocr = ocr_response_data(resp_ocr)
-                if debug: logger.info(f"result ocr - ocr_code: {str(data_ocr['ocr_code'])}")
-                # if debug: logger.info('result ocr - parsed_text: \n' + str(data_ocr['parsed_text']))
-
-                # remove user's file
-                try:
-                    os.remove(user_file)
-                    if debug: logger.info(f'File remove {str(user_file)}')
-                except Exception as os_remove_exception:
-                    logger.warning(os_remove_exception)
-
-                if data_ocr['ocr_exit_code'] != 1:
-                    if debug: logger.info(f"error result ocr code: {data_ocr['ocr_code']}")
-                    await event.reply(
-                        f"Oops! Something went wrong:"
-                        f"{data_ocr['ocr_code']}")
                 else:
-                    pars_text = data_ocr['parsed_text']
-                    if debug: logger.info(
-                        f'Length of parsed text {len(pars_text)} items'
-                    )
-                    # if debug: logger.info('parsed text:\n {}'.format(pars_text))
-                    # reply by parsed text
-                    if srv_settings['result']['code'] == 'file':
+                    data_ocr = ocr_response_data(resp_ocr)
+                    if debug: logger.info(f"result ocr - ocr_code: {str(data_ocr['ocr_code'])}")
 
-                        str_to_file(pars_text)
-                        if debug: logger.info('reply by text file')
+                    try:
+                        os.remove(user_file)
+                        if debug: logger.info(f'File remove {str(user_file)}')
+                    except Exception as os_remove_exception:
+                        logger.warning(os_remove_exception)
 
-                        await event.respond(
-                            file='tmp/ocr_text.txt',
-                            message='Parsing result in this file'
-                        )
-                        os.remove('tmp/ocr_text.txt')
-                    elif srv_settings['result']['code'] == 'message':
-                        if debug: logger.info('reply by message with parsed text')
+                    if data_ocr['ocr_exit_code'] not in [1, 4]:
+                        if debug: logger.info(f"error result ocr code: {data_ocr['ocr_code']}")
                         await event.reply(
-                            f'Parsed text:'
-                            f'{pars_text}')
+                            f"Oops! Something went wrong:\n"
+                            f"{data_ocr['ocr_code']}"
+                        )
+                    else:
+                        pars_text = data_ocr['parsed_text']
+                        if debug: logger.info(
+                            f'Length of parsed text {len(pars_text)} items'
+                        )
+                        if srv_settings['result']['code'] == 'file':
+
+                            str_to_file(pars_text)
+                            if debug: logger.info('reply by text file')
+
+                            await event.respond(
+                                file='tmp/ocr_text.txt',
+                                message=(
+                                    f"**{data_ocr['ocr_code']}**\n"
+                                    f'**Parsing result in this file**'
+                                )
+                            )
+                            os.remove('tmp/ocr_text.txt')
+                        elif srv_settings['result']['code'] == 'message':
+                            if debug: logger.info('reply by message with parsed text')
+                            await event.reply(
+                                f"**{data_ocr['ocr_code']}**\n"
+                                f'**Parsed text:**\n'
+                                f'\n'
+                                f'{pars_text}'
+                            )
 
 
 @bot.on(events.CallbackQuery)

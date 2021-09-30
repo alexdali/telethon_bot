@@ -50,16 +50,20 @@ def ocr_space_file(filename, language='eng', isTable=False, ocrengine=1):
 
     try:
         with open(filename, 'rb') as f:
-            r = requests.post(url_api, files={filename: f}, data=payload)
-            logger.info(f'response.status_code: {r.status_code}')
-            r.raise_for_status()
+            res = requests.post(url_api, files={filename: f}, data=payload)
+            logger.info(f'response.status_code: {res.status_code}')
+            res.raise_for_status()
     except requests.exceptions.HTTPError as res_HTTPError:
         logger.warning(f'res_HTTPError: {str(res_HTTPError)}')
     except requests.exceptions.ConnectionError as res_ConnectionError:
         logger.warning(f'res_ConnectionError: {str(res_ConnectionError)}')
+    except requests.exceptions.RequestException as e:
+        logger.warning(f'requests.exceptions.RequestException: {str(e)}')
+        # raise SystemExit(e)
     finally:
         logger.info('try return response ocr api')
-        res = r.content.decode()
+        if res:
+            return res.content.decode()
 
     return res
 
@@ -110,7 +114,6 @@ def ocr_response_data(response_json):
     logger.info(f"proccesing response_data[OCRExitCode]: {response_data['OCRExitCode']}")
 
     if response_data['OCRExitCode'] == 1:
-
         data_ocr = {
             'ocr_code': 'Parsed Successfully',
             'ocr_exit_code': response_data['OCRExitCode'],
@@ -121,16 +124,37 @@ def ocr_response_data(response_json):
             'error_details': response_data['ParsedResults'][0]['ErrorDetails'],
             'parsed_text': response_data['ParsedResults'][0]['ParsedText'],
         }
+    elif response_data['OCRExitCode'] == 4:
+        if 'ErrorMessage' in response_data.keys():
+            try:
+                error_message = response_data['ErrorMessage'][0]
+            except IndexError:
+                error_message = response_data['ErrorMessage']
 
-        # if data_ocr['ocr_exit_code'] == 2:
-        #     data_ocr['ocr_code'] = 'Parsed Partially (Only few pages out of all the pages parsed successfully)'
-        # if data_ocr['ocr_exit_code'] == 3:
-        #     data_ocr['ocr_code'] = 'Image / All the PDF pages failed parsing (This happens mainly because the OCR engine fails to parse an image)'
-        # if data_ocr['ocr_exit_code'] >= 4:
-        #     data_ocr['ocr_code'] = 'Error occurred when attempting to parse'
-        # if data_ocr['error_message'] == 'limit reached':
-        if ('limit reached' in data_ocr['error_message']) or ('limit reached' in data_ocr['error_details']):
-            data_ocr['ocr_code'] = 'limit calls/DAY reached'
+            logger.info(f'error_message: {error_message}')
+            if error_message == 'The maximum page limit of 3 was reached and ' \
+                                'only pages upto the limit were parsed successfully':
+                parsed_text = ''
+                for item in response_data['ParsedResults']:
+                    parsed_text +=item['ParsedText']
+
+                logger.info(f'parsed_text: {parsed_text}')
+                if len(parsed_text) > 0:
+                    data_ocr = {
+                        'ocr_code': error_message,
+                        'ocr_exit_code': response_data['OCRExitCode'],
+                        'fileparse_exit_code': response_data['ParsedResults'][0][
+                            'FileParseExitCode'],
+                        'is_errored_onprocessing': response_data[
+                            'IsErroredOnProcessing'],
+                        'processing_time': response_data[
+                            'ProcessingTimeInMilliseconds'],
+                        'error_message': response_data['ParsedResults'][0][
+                            'ErrorMessage'],
+                        'error_details': response_data['ParsedResults'][0][
+                            'ErrorDetails'],
+                        'parsed_text': parsed_text,
+                    }
     else:
         data_ocr = {
             'ocr_code': 'Error occurred when attempting to parse',
@@ -141,7 +165,22 @@ def ocr_response_data(response_json):
             'parsed_text': '',
         }
 
+    if 'limit reached' in data_ocr['error_message'] or \
+            'limit reached' in data_ocr['error_details']:
+        data_ocr['ocr_code'] = 'limit calls/DAY reached'
+
+    # if data_ocr['ocr_exit_code'] == 2:
+    #     data_ocr['ocr_code'] = 'Parsed Partially (Only few pages out of all the pages parsed successfully)'
+    # if data_ocr['ocr_exit_code'] == 3:
+    #     data_ocr['ocr_code'] = 'Image / All the PDF pages failed parsing (This happens mainly because the OCR engine fails to parse an image)'
+    # if data_ocr['ocr_exit_code'] >= 4:
+    #     data_ocr['ocr_code'] = 'Error occurred when attempting to parse'
+    # if data_ocr['error_message'] == 'limit reached':
+    # if ('limit reached' in data_ocr['error_message']) or ('limit reached' in data_ocr['error_details']):
+    #     data_ocr['ocr_code'] = 'limit calls/DAY reached'
+
     logger.info(f"proccesing data response ocr - ocr_code: {str(data_ocr['ocr_code'])}")
+
     return data_ocr
 
 
