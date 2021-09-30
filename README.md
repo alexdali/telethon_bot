@@ -75,7 +75,7 @@ Please note: The bot could be slow sometimes as it depends on OCR.space's API re
 
 ## ⛏️ Roadmap <a name = "roadmap"></a>
 1. Add the ability to process files by URL
-2. Add warning when exceeding the page limit in pdf file
+2. ~~Add warning when exceeding the page limit in pdf file~~ DONE
 3. Add the ability to process text over 4096 characters
 4. Anti-flood protection
 5. Refactoring
