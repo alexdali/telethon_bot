@@ -30,7 +30,17 @@
 A simple and convenient telegram bot that extracts text from images or PDFs after the user uploads these files to the bot. The result of processing files by the text recognition service can be obtained in one of the following ways: message or text file.
 
 ## 🎥 Demo / Working <a name = "demo"></a>
-_TO-DO_
+
+ocr in pdf files | ocr in image files
+:-: | :-:
+<video src='https://user-images.githubusercontent.com/7926403/135529546-12eee5bb-6bbd-41d7-b78a-1ed829f6abe1.mp4' width=180/> | <video src='https://user-images.githubusercontent.com/7926403/135530178-6d61cbad-1a04-419f-9083-1762f3846c0c.mp4' width=180/>
+
+
+[//]: # "https://user-images.githubusercontent.com/7926403/135529546-12eee5bb-6bbd-41d7-b78a-1ed829f6abe1.mp4"
+
+[//]: # "https://user-images.githubusercontent.com/7926403/135530178-6d61cbad-1a04-419f-9083-1762f3846c0c.mp4"
+
+
 
 ## 💭 How it works <a name = "working"></a>
 
@@ -65,7 +75,7 @@ Please note: The bot could be slow sometimes as it depends on OCR.space's API re
 
 ## ⛏️ Roadmap <a name = "roadmap"></a>
 1. Add the ability to process files by URL
-2. Add warning when exceeding the page limit in pdf file
+2. ~~Add warning when exceeding the page limit in pdf file~~ DONE
 3. Add the ability to process text over 4096 characters
 4. Anti-flood protection
 5. Refactoring
