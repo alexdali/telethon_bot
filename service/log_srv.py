@@ -1,9 +1,12 @@
+import os
 import logging
+
+cur_dir = os.getcwd()
 
 _log_format = f"%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"
 
 def get_file_handler():
-    file_handler = logging.FileHandler("../app.log")
+    file_handler = logging.FileHandler(cur_dir + "/app.log")
     file_handler.setLevel(logging.WARNING)
     file_handler.setFormatter(logging.Formatter(_log_format))
     return file_handler
